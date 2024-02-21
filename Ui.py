@@ -9,6 +9,7 @@ fore = "white"
 
 #User defined Function area
 def restart():
+  app.quit()
   subprocess.Popen([sys.executable, __file__])
 
 def send():
