@@ -17,8 +17,6 @@ def send():
       return
   txt1.insert(tk.END, f"User: {user_input}\n")
   tplace.delete(0, tk.END)
-def new_chat():
-  exec(open('main.py').read())
 
 def end_chat():
   txt1.insert(tk.END, "Chat Ended\n")
