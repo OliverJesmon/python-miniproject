@@ -16,12 +16,6 @@ def user_receive():
     while True:
         try:
             message = users.recv(1024).decode('utf-8')
-            if message == 'name':
-              data=f'{message} has joined the chat'
-              txt1.insert(tk.END, data)
-              users.send(data.encode('utf-8'))
-              txt.configure(text=data)
-            else:
                 txt1.insert(tk.END, message)
         except:
             txt1.insert(tk.END, "Error")
@@ -37,16 +31,22 @@ def send():
     users.send(letter.encode('utf-8'))
     tplace.delete(0, tk.END)
 
+#Function to end the chat conversation
 def end_chat():
-    txt1.insert(tk.END, "Chat Ended\n")
+    end="Chat Ended\n"
+    txt1.insert(tk.END, end)
+    users.send(end.encode('utf-8'))
     txt1.config(state=tk.DISABLED)
+    return
 
 def begin():
     name = alias.dialogue()
-    user = name
+    data=f'{name} has joined the chat'
     rec_thread = threading.Thread(target=user_receive)
     rec_thread.start()
-    return user
+    txt1.insert(tk.END, data)
+    users.send(data.encode('utf-8'))
+    return
 
 address = input("Enter the server address: ")
 users = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -90,3 +90,4 @@ post = tk.Button(tplace_frame, text='Send', font=('Helvetica', 14, 'bold'), comm
 post.place(x=390, y=0, width=80, height=30)
 
 app.mainloop()
+#Coded by Oliver
