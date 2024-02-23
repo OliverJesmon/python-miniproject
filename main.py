@@ -90,4 +90,4 @@ post = tk.Button(tplace_frame, text='Send', font=('Helvetica', 14, 'bold'), comm
 post.place(x=390, y=0, width=80, height=30)
 
 app.mainloop()
-#Coded by Oliver
+#programmed by Oliver
