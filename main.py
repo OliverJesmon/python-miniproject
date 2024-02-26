@@ -1,22 +1,26 @@
 
 import tkinter as tk
 import socket
-import sys
+import random
 import threading
 import alias
-import subprocess
+
 
 app = tk.Tk()
 user=str()
-def restart():
-    app.quit()
-    subprocess.Popen([sys.executable, __file__])
+r='Red'
+y='Purple'
+b='Blue'
+g='Green'
+
+num=random.randint(1,4)
+
 
 def user_receive():
     while True:
         try:
             message = users.recv(1024).decode('utf-8')
-                txt1.insert(tk.END, message)
+            txt1.insert(tk.END, message)
         except:
             txt1.insert(tk.END, "Error")
             end_chat()
@@ -26,7 +30,7 @@ def send():
     user_input = tplace.get()
     if user_input == "":
         return
-    letter = f"{user}: {user_input}\n"
+    letter = f"{user}:{user_input}\n"
     txt1.insert(tk.END, letter)
     users.send(letter.encode('utf-8'))
     tplace.delete(0, tk.END)
@@ -37,26 +41,36 @@ def end_chat():
     txt1.insert(tk.END, end)
     users.send(end.encode('utf-8'))
     txt1.config(state=tk.DISABLED)
+    users.close()
     return
+
+def color():
+    if num==1:
+        return r
+    elif num==2:
+        return y
+    elif num==3:
+        return b
+    elif num==4:
+        return g
 
 def begin():
     name = alias.dialogue()
-    data=f'{name} has joined the chat'
+    data=f'{name} has joined the chat\n'
     rec_thread = threading.Thread(target=user_receive)
     rec_thread.start()
-    txt1.insert(tk.END, data)
     users.send(data.encode('utf-8'))
-    return
+    return name
+
 
 address = input("Enter the server address: ")
 users = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 users.connect((address, 59000))
 print(f"Connected to {address}")
-begin()
+user=begin()
 
 options = tk.Menu(app)
 menu = tk.Menu(options, tearoff=0)
-menu.add_command(label="Start new Chat", command=restart)
 menu.add_command(label="End Chat", command=end_chat)
 menu.add_command(label="Exit", command=app.quit)
 options.add_cascade(label="File", menu=menu)
@@ -73,7 +87,7 @@ txt.place(x=0, y=30)
 space = tk.Frame(app, width=500, height=400)
 space.place(x=10, y=100)
 
-txt1 = tk.Text(space, font=('Helvetica', 13))
+txt1 = tk.Text(space, font=('Helvetica', 13), fg=color())
 txt1.grid(row=1, column=0, columnspan=2)
 
 scrollbar = tk.Scrollbar(space)
