@@ -1,107 +1,105 @@
 
-import tkinter as tk
+import sys
+from PyQt5.QtWidgets import QApplication, QTextEdit, QWidget, QVBoxLayout,QPushButton,QAction,QMainWindow,QLabel
+
+
+
 import socket
-import random
 import threading
 import alias
 
+class ChatWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-app = tk.Tk()
-user=str()
-r='Red'
-y='Purple'
-b='Blue'
-g='Green'
+        self.user = alias.dialogue()
+        
+        self.terminate=f"{self.user} has left the chat\n"
+        self.users = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-num=random.randint(1,4)
+        self.begin()
+        self.initUI()
+        self.show()
 
+    def initUI(self):
+        self.setWindowTitle('Chat Window')
+        self.setGeometry(100, 100, 500, 500)
 
-def user_receive():
-    while True:
+        self.centralWidget = QWidget()
+        self.setCentralWidget(self.centralWidget)
+
+        self.layout = QVBoxLayout()
+        self.centralWidget.setLayout(self.layout)
+
+        self.txt = QLabel("Howdy!Welcome to the chatroom")
+        self.layout.addWidget(self.txt)
+
+        self.txt1 = QTextEdit()
+
+        self.txt1.setReadOnly(True)
+        self.layout.addWidget(self.txt1)
+        
+ 
+
+        self.tplace = QTextEdit()
+        self.tplace.setFixedHeight(70)
+        self.layout.addWidget(self.tplace)
+
+        self.sendButton = QPushButton('Send')
+        self.sendButton.clicked.connect(self.send)
+        self.sendButton.setFixedSize(45,45)
+        self.layout.addWidget(self.sendButton)
+
+        self.menuBar = self.menuBar()
+        fileMenu = self.menuBar.addMenu('File')
+        endChatAction = QAction('End Chat', self)
+        endChatAction.triggered.connect(self.end_chat)
+        fileMenu.addAction(endChatAction)
+        exitAction = QAction('Exit', self)
+        exitAction.triggered.connect(self.close)
+        fileMenu.addAction(exitAction)
+
+    def send(self):
+        user_input = self.tplace.toPlainText().strip()
+        if not user_input:
+            return
+        letter = f"{self.user}: {user_input}\n"
+        self.txt1.append(letter)
+        self.users.send(letter.encode('utf-8'))
+        self.tplace.clear()
+
+    def end_chat(self):
+        
+        self.users.send(self.terminate.encode('utf-8'))
+        self.txt1.setReadOnly(True)
         try:
-            message = users.recv(1024).decode('utf-8')
-            txt1.insert(tk.END, message)
-        except:
-            txt1.insert(tk.END, "Error")
-            end_chat()
-            break
+          self.users.close()
+        except Exception as e:
+            self.txt1.append(self.terminate)
 
-def send():
-    user_input = tplace.get()
-    if user_input == "":
-        return
-    letter = f"{user}:{user_input}\n"
-    txt1.insert(tk.END, letter)
-    users.send(letter.encode('utf-8'))
-    tplace.delete(0, tk.END)
+    def user_receive(self):
+        while True:
+            try:
+                message = self.users.recv(1024).decode('utf-8')
+                self.txt1.insertPlainText(message)
+            except:
+                self.txt1.insertPlainText(self.terminate)
+                self.end_chat()
+                break
 
-#Function to end the chat conversation
-def end_chat():
-    end="Chat Ended\n"
-    txt1.insert(tk.END, end)
-    users.send(end.encode('utf-8'))
-    txt1.config(state=tk.DISABLED)
-    users.close()
-    return
+    def begin(self):
+        self.address = input("Enter the server address: ")
+        self.users.connect((self.address, 59000))
+        print(f"Connected to {self.address}")
+        data = f'{self.user} has joined the chat\n'
+        rec_thread = threading.Thread(target=self.user_receive)
+        rec_thread.start()
+        self.users.send(data.encode('utf-8'))
+        
 
-def color():
-    if num==1:
-        return r
-    elif num==2:
-        return y
-    elif num==3:
-        return b
-    elif num==4:
-        return g
-
-def begin():
-    name = alias.dialogue()
-    data=f'{name} has joined the chat\n'
-    rec_thread = threading.Thread(target=user_receive)
-    rec_thread.start()
-    users.send(data.encode('utf-8'))
-    return name
-
-
-address = input("Enter the server address: ")
-users = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-users.connect((address, 59000))
-print(f"Connected to {address}")
-user=begin()
-
-options = tk.Menu(app)
-menu = tk.Menu(options, tearoff=0)
-menu.add_command(label="End Chat", command=end_chat)
-menu.add_command(label="Exit", command=app.quit)
-options.add_cascade(label="File", menu=menu)
-app.config(menu=options)
-
-app.title('Chat Window')
-app.geometry('500x500')
-app.configure(bg='Grey')
-
-
-txt = tk.Label(text="Connecting User...", font=('Helvetica', 13), fg='Brown')
-txt.place(x=0, y=30)
-
-space = tk.Frame(app, width=500, height=400)
-space.place(x=10, y=100)
-
-txt1 = tk.Text(space, font=('Helvetica', 13), fg=color())
-txt1.grid(row=1, column=0, columnspan=2)
-
-scrollbar = tk.Scrollbar(space)
-scrollbar.place(relheight=1, relx=0.974)
-
-tplace_frame = tk.Frame(app)
-tplace_frame.place(x=0, y=space.winfo_height()+570, width=500, height=40)
-
-tplace = tk.Entry(tplace_frame, bg='green', fg='Black', font=('Helvetica', 13), cursor='xterm')
-tplace.config()  # Added line to set highlighting color to green
-tplace.place(x=10, y=0, width=380, height=30)
-
-post = tk.Button(tplace_frame, text='Send', font=('Helvetica', 14, 'bold'), command=send)
-post.place(x=390, y=0, width=80, height=30)
-
-app.mainloop()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = ChatWindow()
+    window.show()
+    sys.exit(app.exec_())
 #programmed by Oliver
