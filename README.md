@@ -17,5 +17,6 @@ This project served as a miniproject for an application development course.
 ![d4bc8f354c](https://github.com/user-attachments/assets/885e7685-76d7-437c-8b06-5af9eb5b8b18)
    
 
-<h3>A glimpse on the application:(demonstration)</h3> 
+<h3>A glimpse on the application:(demonstration)</h3>
+
 ![Screenshot 2024-10-01 130531](https://github.com/user-attachments/assets/be20fc46-2c82-4c55-80bd-f9673432c145)
